@@ -41,6 +41,10 @@ class PracticeMode {
       mirrored: playerState.mirrored,
       isDashing: playerState.isDashing,
       dashYVelocity: playerState.dashYVelocity,
+      ballShouldRotate: playerState.ballShouldRotate,
+      ballRotateOpposite: playerState.ballRotateOpposite,
+      ballNormalRotate: playerState.ballNormalRotate,
+      ballHitPad: playerState.ballHitPad,
       robotHold: !!playerState._robotHold,
       robotHoldTimer: playerState._robotHoldTimer || 0,
       cameraX: cameraX,
@@ -3809,8 +3813,8 @@ this._menuUpdateLogBtn = this.add.image(screenWidth - 30 - 50, 33, "GJ_WebSheet"
       const rRaw = (colorHex >> 16) & 0xff;
       const gRaw = (colorHex >> 8)  & 0xff;
       const bRaw =  colorHex        & 0xff;
-      const topMul = isEveryEnd ? 0.30 : 0.65;
-      const botMul = isEveryEnd ? 0.18 : 0.42;
+      const topMul = isEveryEnd ? 0.48 : 0.92;
+      const botMul = isEveryEnd ? 0.18 : 0.52;
       const steps = 60;
       for (let i = 0; i < steps; i++) {
         const t = i / (steps - 1);
@@ -3841,9 +3845,9 @@ this._menuUpdateLogBtn = this.add.image(screenWidth - 30 - 50, 33, "GJ_WebSheet"
     const tileW = groundFrame ? groundFrame.width : 1012;
     const numTiles = Math.ceil(sw / tileW) + 2;
     const groundTintHex = (colorHex) => {
-      const r = Math.round(((colorHex >> 16) & 0xff) * 0.45);
-      const g = Math.round(((colorHex >> 8)  & 0xff) * 0.45);
-      const b = Math.round(( colorHex        & 0xff) * 0.45);
+      const r = Math.round(((colorHex >> 16) & 0xff) * 0.72);
+      const g = Math.round(((colorHex >> 8)  & 0xff) * 0.72);
+      const b = Math.round(( colorHex        & 0xff) * 0.72);
       return (r << 16) | (g << 8) | b;
     };
     const staticGroundTiles = [];
@@ -3942,8 +3946,8 @@ this._menuUpdateLogBtn = this.add.image(screenWidth - 30 - 50, 33, "GJ_WebSheet"
       const r = Math.round(((colorHex >> 16) & 0xff) * mul);
       const g = Math.round(((colorHex >> 8)  & 0xff) * mul);
       const b = Math.round(( colorHex        & 0xff) * mul);
-      cardBg.fillStyle((r << 16) | (g << 8) | b, 0.92);
-      cardBg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 14);
+      cardBg.fillStyle((r << 16) | (g << 8) | b, 0.75);
+      cardBg.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 18);
     };
     drawCardBg(bgHex, isEveryEnd(window.currentlevel[2]), isComingSoonPage());
     cardBounceContainer.add(cardBg);
@@ -4153,7 +4157,7 @@ this._menuUpdateLogBtn = this.add.image(screenWidth - 30 - 50, 33, "GJ_WebSheet"
       }
       let iconDisplayW = (iconFrame ? iconFrame.width : 80) * finalIconScale;
       const iconDisplayH = (iconFrame ? iconFrame.height : 80) * finalIconScale;
-      const nameLabel = this.add.bitmapText(0, 0, "bigFont", lvl[1], 50)
+      const nameLabel = this.add.bitmapText(0, 0, "bigFont", lvl[1], 60)
         .setScrollFactor(0).setDepth(155).setOrigin(0, 0.5);
       const gap = 25;
       const naturalGroupW = iconDisplayW + gap + nameLabel.width;
@@ -4167,7 +4171,7 @@ this._menuUpdateLogBtn = this.add.image(screenWidth - 30 - 50, 33, "GJ_WebSheet"
       const scaledGap = gap * groupScale;
       const totalW = scaledIconW + scaledGap + scaledLabelW;
       const groupStartX = cardX - totalW / 2;
-      demonIcon.setScale(finalIconScale * groupScale);
+      demonIcon.setScale((finalIconScale * groupScale)+0.2);
       demonIcon.setPosition(groupStartX + scaledIconW / 2 - cardX, 0);
       nameLabel.setScale(groupScale);
       nameLabel.setPosition(groupStartX + scaledIconW + scaledGap - cardX, 0);
@@ -4189,7 +4193,7 @@ this._menuUpdateLogBtn = this.add.image(screenWidth - 30 - 50, 33, "GJ_WebSheet"
       barObjs.push(modeLabel);
       cardContainer.add(modeLabel);
       const barBg = this.add.graphics().setScrollFactor(0).setDepth(154);
-      barBg.fillStyle(0x000000, 0.6);
+      barBg.fillStyle(0x000000, 0.5);
       barBg.fillRoundedRect(barX0, barAreaY - barH2 / 2, barW2, barH2, barH2 / 2);
       barObjs.push(barBg);
       cardContainer.add(barBg);
@@ -4223,7 +4227,7 @@ this._menuUpdateLogBtn = this.add.image(screenWidth - 30 - 50, 33, "GJ_WebSheet"
       barObjs.push(practModeLabel);
       cardContainer.add(practModeLabel);
       const practBarBg = this.add.graphics().setScrollFactor(0).setDepth(154);
-      practBarBg.fillStyle(0x000000, 0.6);
+      practBarBg.fillStyle(0x000000, 0.5);
       practBarBg.fillRoundedRect(barX0, practBarAreaY - barH2 / 2, barW2, barH2, barH2 / 2);
       barObjs.push(practBarBg);
       cardContainer.add(practBarBg);
@@ -5249,8 +5253,8 @@ _buildSettingsPopup() {
       });
 
       const importBtn = this.add.image(centerX - 300, centerY + 20,"importMacro").setInteractive();
-      const exportBtn = this.add.image(centerX - 150, centerY + 20, "GJ_GameSheet03", "GJ_shareBtn_001.png").setInteractive().setFlipY(true).setAngle(90).setScale(0.53);
-      const createBtn = this.add.image(centerX, centerY + 20, "GJ_GameSheet03", "GJ_plusBtn_001.png").setInteractive().setFlipY(true).setAngle(90).setScale(1.2);
+      const exportBtn = this.add.image(centerX - 150, centerY + 20, "GJ_GameSheet03", "GJ_shareBtn_001.png").setInteractive().setScale(0.53);
+      const createBtn = this.add.image(centerX, centerY + 20, "GJ_GameSheet03", "GJ_plusBtn_001.png").setInteractive().setScale(1.2);
       const playbackBtn = this.add.image(centerX + 150, centerY + 20, this._macroBot?.playing ? "stopPlayback" : "playbackMacro").setInteractive().setScale(0.25);
       const recordBtn = this.add.image(centerX + 300, centerY + 20, this._macroBot?.recording ? "stopRecord" : "recordMacro").setInteractive().setScale(0.25);
 
@@ -5838,6 +5842,9 @@ _buildSettingsPopup() {
       { text: "levels now (thanks lasokadadyy)", scale: 0.7, },
       { text: "fixed SOME objects", scale: 0.7 },
       { text: "-pinkdih", scale: 0.7, color: 0xFF008E },
+      { text: "fixed a lot more objects", scale: 0.55 },
+      { text: "reworked the ball's rolling physics", scale: 0.55 },
+      { text: "particles soon", scale: 0.55, color: 0x708090},
     ]; 
     let yPos = 0;
     const lineItems = [];
@@ -6892,6 +6899,7 @@ _buildSettingsPopup() {
       this._macroBot?.clearPlayback();
     }
     this._level._updateGlowVisibility?.();
+    this._updateCameraY(0, true);
   }
   _getSongOffsetForWorldX(worldX) {
     const startX = Number.isFinite(Number(worldX)) ? Number(worldX) : 0;
@@ -6925,6 +6933,7 @@ _buildSettingsPopup() {
     this._slideIn = false;
     this._playerWorldX = checkpoint.x;
     this._cameraX = checkpoint.cameraX;
+    this._cameraY = checkpoint.cameraY;
     this._cameraXRef._v = this._cameraX;
     this._state.y = checkpoint.y;
     this._state.yVelocity = checkpoint.yVelocity;
@@ -6952,6 +6961,10 @@ _buildSettingsPopup() {
     this._state.mirrored = checkpoint.mirrored;
     this._state.isDashing = checkpoint.isDashing;
     this._state.dashYVelocity = checkpoint.dashYVelocity;
+    this._state.ballShouldRotate = checkpoint.ballShouldRotate || false;
+    this._state.ballRotateOpposite = checkpoint.ballRotateOpposite || false;
+    this._state.ballNormalRotate = checkpoint.ballNormalRotate || 1;
+    this._state.ballHitPad = checkpoint.ballHitPad || false;
     this._state._robotHold = !!checkpoint.robotHold;
     this._state._robotHoldTimer = checkpoint.robotHoldTimer || 0;
     this._player.reset();
@@ -7108,6 +7121,7 @@ _buildSettingsPopup() {
     }
     if (this._player2?._hitboxGraphics) this._player2._hitboxGraphics.clear();
 
+    this._deltaBuffer = 0;
     this._physicsFrame = checkpoint.physicsFrame;
     if (this._macroBot?.recording == true){
       this._macroBot?.rollbackRecording(this._physicsFrame);
@@ -7218,7 +7232,7 @@ _buildSettingsPopup() {
     }
     this._bg.tilePositionY = tileY;
   }
-  _updateCameraY(_0xc7c517) {
+  _updateCameraY(_0xc7c517, snap = false) {
     let explosionPiece = this._cameraY;
     let _0x1a27be = explosionPiece;
     if (this._level.flyCameraTarget !== null) {
@@ -7227,25 +7241,27 @@ _buildSettingsPopup() {
       let _0x2bc8fb = this._state.y;
       let _0x259956 = 140;
       let _0x5025ec = 80;
-      let _0x1f7976 = explosionPiece - o + 320;
+      let _0x1f7976 = explosionPiece - (typeof o !== 'undefined' ? o : 0) + 320;
       if (this._state.gravityFlipped) {
         if (_0x2bc8fb > _0x1f7976 + _0x5025ec) {
-          _0x1a27be = _0x2bc8fb - 320 - _0x5025ec + o;
+          _0x1a27be = _0x2bc8fb - 320 - _0x5025ec + (typeof o !== 'undefined' ? o : 0);
         } else if (_0x2bc8fb < _0x1f7976 - _0x259956) {
-          _0x1a27be = _0x2bc8fb - 320 + _0x259956 + o;
+          _0x1a27be = _0x2bc8fb - 320 + _0x259956 + (typeof o !== 'undefined' ? o : 0);
         }
       } else {
         if (_0x2bc8fb > _0x1f7976 + _0x259956) {
-          _0x1a27be = _0x2bc8fb - 320 - _0x259956 + o;
+          _0x1a27be = _0x2bc8fb - 320 - _0x259956 + (typeof o !== 'undefined' ? o : 0);
         } else if (_0x2bc8fb < _0x1f7976 - _0x5025ec) {
-          _0x1a27be = _0x2bc8fb - 320 + _0x5025ec + o;
+          _0x1a27be = _0x2bc8fb - 320 + _0x5025ec + (typeof o !== 'undefined' ? o : 0);
         }
       }
     }
     if (_0x1a27be < 0) {
       _0x1a27be = 0;
     }
-    if (_0xc7c517 !== 0) {
+    if (snap) {
+      this._cameraY = _0x1a27be;
+    } else if (_0xc7c517 !== 0) {
       explosionPiece += (_0x1a27be - explosionPiece) / (10 / _0xc7c517);
       if (explosionPiece < 0) {
         explosionPiece = 0;
@@ -7553,7 +7569,7 @@ _buildSettingsPopup() {
     }
     if (this._state.isDead) {
       if (!this._deathSoundPlayed) {
-        if (!this._practicedMode.practiceMode) {
+        if (!this._audio._shouldUsePracticeSong()) {
           this._audio.stopMusic();
         }
         this._audio.playEffect("explode_11", {
@@ -7733,6 +7749,9 @@ _buildSettingsPopup() {
         const _secondaryBallInputGravity = this._state2.isBall && this._state2.upKeyPressed;
         const _secondarySpiderInputGravity = this._state2.isSpider && this._state2.upKeyPressed;
         this._player2.updateJump(verticalDelta);
+        if (!this._state2.upKeyPressed) this._state.upKeyPressed = false;
+        if (!this._state2.queuedHold) this._state.queuedHold = false;
+        if (this._state2._orbActivationConsumedForPress) this._state._orbActivationConsumedForPress = true;
         this._state2.y += this._state2.yVelocity * verticalDelta;
         this._player2.checkCollisions(this._playerWorldX - centerX - horizontalDelta);
         if (this._isDual && !this._state2.isDead && this._getDualSharedSignature(this._state2) !== _secondarySharedBefore) {
